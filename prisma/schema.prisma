@@ -1,0 +1,64 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["jsonProtocol"]
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(REGISTERED)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  contents      Content[]
+}
+
+model Content {
+  id           String   @id @default(cuid())
+  title        String
+  body         String
+  accessLevel  AccessLevel
+  type         ContentType
+  reactVersion String?
+  views        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  author       User     @relation(fields: [authorId], references: [id])
+  authorId     String
+  versions     ContentVersion[]
+}
+
+model ContentVersion {
+  id        String   @id @default(cuid())
+  content   Content  @relation(fields: [contentId], references: [id])
+  contentId String
+  body      String
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  VISITOR
+  REGISTERED
+  INVESTOR
+  CREATOR
+}
+
+enum AccessLevel {
+  PUBLIC
+  REGISTERED
+  INVESTOR
+  CREATOR
+}
+
+enum ContentType {
+  ARTICLE
+  REPORT
+  REACT
+}
